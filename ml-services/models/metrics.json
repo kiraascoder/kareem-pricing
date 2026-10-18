@@ -1,0 +1,9 @@
+{
+  "mae": 0.03672810404745347,
+  "rmse": 0.046928031306484055,
+  "r2": 0.8606887561957928,
+  "train_samples": 2400,
+  "test_samples": 600,
+  "model_version": "rf-synthetic-v1",
+  "dataset_type": "synthetic"
+}
