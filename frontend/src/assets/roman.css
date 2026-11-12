@@ -1,0 +1,105 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  font-family: 'Inter', sans-serif;
+  color-scheme: dark;
+
+  --roman-bg: #0b0b0d;
+  --roman-surface: #18181b;
+  --roman-surface-hover: #222226;
+  --roman-border: #303036;
+  --roman-orange: #f97316;
+  --roman-orange-hover: #ea580c;
+  --roman-text: #f5f0e8;
+  --roman-muted: #a1a1aa;
+  --roman-radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--roman-bg);
+  color: var(--roman-text);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.roman-title {
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.035em;
+}
+
+.roman-card {
+  background: var(--roman-surface);
+  border: 1px solid var(--roman-border);
+  border-radius: var(--roman-radius);
+}
+
+.roman-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--roman-orange);
+  color: #101010;
+  font-weight: 700;
+  transition: background .2s, transform .2s;
+}
+
+.roman-button:hover {
+  background: #fb923c;
+  transform: translateY(-1px);
+}
+
+.roman-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.roman-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid var(--roman-border);
+  border-radius: 9px;
+  background: #111114;
+  color: var(--roman-text);
+  outline: none;
+}
+
+.roman-input:focus {
+  border-color: var(--roman-orange);
+  box-shadow: 0 0 0 3px #f9731622;
+}
+
+.roman-input::placeholder {
+  color: #71717a;
+}
+
+.roman-eyebrow {
+  color: var(--roman-orange);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
