@@ -36,12 +36,32 @@ const routes = [
     roles: ['customer'],
   },
 },
+
 {
   path: '/customer/bookings',
-  component: CustomerSectionView,
-  props: { title: 'Booking Saya' },
-  meta: { requiresAuth: true, roles: ['customer'] },
+  component: CustomerBookingsView,
+  meta: {
+    requiresAuth: true,
+    roles: ['customer'],
+  },
 },
+{
+  path: '/customer/bookings/create',
+  component: CustomerBookingCreateView,
+  meta: {
+    requiresAuth: true,
+    roles: ['customer'],
+  },
+},
+{
+  path: '/customer/bookings/:id',
+  component: CustomerBookingDetailView,
+  meta: {
+    requiresAuth: true,
+    roles: ['customer'],
+  },
+},
+
 {
   path: '/customer/payments',
   component: CustomerSectionView,
