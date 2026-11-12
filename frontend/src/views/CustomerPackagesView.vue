@@ -82,8 +82,10 @@ function closeDetail() {
 
 function bookPackage(item) {
   router.push({
-    path: '/customer/bookings',
-    query: { package_id: item.id },
+    path: '/customer/bookings/create',
+    query: {
+      package_id: item.id,
+    },
   })
 }
 
