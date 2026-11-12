@@ -4,6 +4,7 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import CustomerView from "../views/CustomerView.vue";
 import AdminView from "../views/AdminView.vue";
+import CustomerSectionView from '../views/CustomerSectionView.vue'
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -22,6 +23,26 @@ const routes = [
       roles: ["admin", "super_admin"],
     },
   },
+  
+{
+  path: '/customer/packages',
+  component: CustomerSectionView,
+  props: { title: 'Paket Event' },
+  meta: { requiresAuth: true, roles: ['customer'] },
+},
+{
+  path: '/customer/bookings',
+  component: CustomerSectionView,
+  props: { title: 'Booking Saya' },
+  meta: { requiresAuth: true, roles: ['customer'] },
+},
+{
+  path: '/customer/payments',
+  component: CustomerSectionView,
+  props: { title: 'Pembayaran' },
+  meta: { requiresAuth: true, roles: ['customer'] },
+},
+
 ];
 
 const router = createRouter({
