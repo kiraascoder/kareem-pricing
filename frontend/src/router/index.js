@@ -4,8 +4,11 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import CustomerView from "../views/CustomerView.vue";
 import AdminView from "../views/AdminView.vue";
-import CustomerSectionView from "../views/CustomerSectionView.vue"
-import CustomerPackagesView from "../views/CustomerPackagesView.vue"
+import CustomerSectionView from "../views/CustomerSectionView.vue";
+import CustomerPackagesView from "../views/CustomerPackagesView.vue";
+import CustomerBookingCreateView from "../views/CustomerBookingCreateView.vue";
+import CustomerBookingsView from "../views/CustomerBookingsView.vue";
+import CustomerBookingDetailView from "../views/CustomerBookingDetailView.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
