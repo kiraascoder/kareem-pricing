@@ -4,7 +4,8 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import CustomerView from "../views/CustomerView.vue";
 import AdminView from "../views/AdminView.vue";
-import CustomerSectionView from '../views/CustomerSectionView.vue'
+import CustomerSectionView from "../views/CustomerSectionView.vue"
+import CustomerPackagesView from "../views/CustomerPackagesView.vue"
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -26,9 +27,11 @@ const routes = [
   
 {
   path: '/customer/packages',
-  component: CustomerSectionView,
-  props: { title: 'Paket Event' },
-  meta: { requiresAuth: true, roles: ['customer'] },
+  component: CustomerPackagesView,
+  meta: {
+    requiresAuth: true,
+    roles: ['customer'],
+  },
 },
 {
   path: '/customer/bookings',
