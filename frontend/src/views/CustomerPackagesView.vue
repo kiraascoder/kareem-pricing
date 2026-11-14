@@ -1,95 +1,93 @@
-
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import CustomerLayout from '../layouts/CustomerLayout.vue'
-import EventPackageCard from '../components/EventPackageCard.vue'
-import api from '../services/api'
+import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+import CustomerLayout from "../layouts/CustomerLayout.vue";
+import EventPackageCard from "../components/EventPackageCard.vue";
 
-const packages = ref([])
-const categories = ref([])
-const loading = ref(true)
-const error = ref('')
+import {
+  getPackages,
+  getCategories,
+  extractCollection,
+  extractApiError,
+} from "../services/bookingApi";
 
-const search = ref('')
-const selectedCategory = ref('')
-const selectedPackage = ref(null)
+const router = useRouter();
+
+const packages = ref([]);
+const categories = ref([]);
+
+const loading = ref(true);
+const error = ref("");
+
+const search = ref("");
+const selectedCategory = ref("");
+const selectedPackage = ref(null);
 
 const formatRupiah = (value) =>
-  new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(Number(value || 0))
-
-function extractCollection(response) {
-  const payload = response.data?.data
-
-  if (Array.isArray(payload)) return payload
-  if (Array.isArray(payload?.data)) return payload.data
-
-  throw new Error('Format respons API tidak dikenali.')
-}
+  }).format(Number(value || 0));
 
 async function loadData() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = "";
 
   try {
-    const [packageResponse, categoryResponse] =
-      await Promise.all([
-        api.get('/event-packages'),
-        api.get('/event-categories'),
-      ])
+    const [packageResponse, categoryResponse] = await Promise.all([
+      getPackages(),
+      getCategories(),
+    ]);
 
-    packages.value = extractCollection(packageResponse)
-    categories.value = extractCollection(categoryResponse)
+    packages.value = extractCollection(packageResponse);
+    categories.value = extractCollection(categoryResponse);
   } catch (err) {
-    error.value =
-      err.response?.data?.message ||
-      err.message ||
-      'Gagal memuat katalog paket event.'
+    console.error("Gagal memuat katalog:", err);
+
+    error.value = extractApiError(err, "Gagal memuat katalog paket event.");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 const filteredPackages = computed(() => {
-  const keyword = search.value.trim().toLowerCase()
+  const keyword = search.value.trim().toLowerCase();
 
   return packages.value.filter((item) => {
-    const name = String(item.name || '').toLowerCase()
+    const name = String(item.name || "").toLowerCase();
 
-    const matchSearch = !keyword || name.includes(keyword)
+    const matchSearch = !keyword || name.includes(keyword);
 
     const matchCategory =
       !selectedCategory.value ||
-      String(item.category_id) === selectedCategory.value
+      String(item.category_id) === String(selectedCategory.value);
 
-    return matchSearch && matchCategory
-  })
-})
+    return matchSearch && matchCategory;
+  });
+});
 
 function openDetail(item) {
-  selectedPackage.value = item
+  selectedPackage.value = item;
 }
 
 function closeDetail() {
-  selectedPackage.value = null
+  selectedPackage.value = null;
 }
 
 function bookPackage(item) {
+  closeDetail();
+
   router.push({
-    path: '/customer/bookings/create',
+    path: "/customer/bookings/create",
     query: {
       package_id: item.id,
     },
-  })
+  });
 }
 
-onMounted(loadData)
+onMounted(loadData);
 </script>
 
 <template>
@@ -99,20 +97,18 @@ onMounted(loadData)
         <div class="roman-eyebrow">OUR EXPERIENCES</div>
         <h1 class="roman-title">Event Packages</h1>
         <p>
-          Temukan layanan event yang sesuai dengan kebutuhan
-          dan rencana anggaran Anda.
+          Temukan layanan event yang sesuai dengan kebutuhan dan rencana
+          anggaran Anda.
         </p>
       </div>
     </div>
 
     <section class="catalog-intro roman-card">
       <div class="roman-eyebrow">CURATED FOR YOU</div>
-      <h2 class="roman-title">
-        Your Event, Our Excellence.
-      </h2>
+      <h2 class="roman-title">Your Event, Our Excellence.</h2>
       <p>
-        Pilih paket event dan lanjutkan ke proses booking
-        untuk mendapatkan estimasi harga berbasis AI.
+        Pilih paket event dan lanjutkan ke proses booking untuk mendapatkan
+        estimasi harga berbasis AI.
       </p>
     </section>
 
@@ -124,10 +120,7 @@ onMounted(loadData)
         placeholder="Cari paket event..."
       />
 
-      <select
-        v-model="selectedCategory"
-        class="roman-input category-select"
-      >
+      <select v-model="selectedCategory" class="roman-input category-select">
         <option value="">Semua Kategori</option>
 
         <option
@@ -140,15 +133,11 @@ onMounted(loadData)
       </select>
     </div>
 
-    <p v-if="loading" class="state-message">
-      Memuat paket event...
-    </p>
+    <p v-if="loading" class="state-message">Memuat paket event...</p>
 
     <div v-else-if="error" class="state-message error">
       <p>{{ error }}</p>
-      <button class="roman-button" @click="loadData">
-        Coba Lagi
-      </button>
+      <button class="roman-button" @click="loadData">Coba Lagi</button>
     </div>
 
     <template v-else>
@@ -197,8 +186,7 @@ onMounted(loadData)
 
         <p class="detail-description">
           {{
-            selectedPackage.description ||
-            'Paket event Kareem Entertainment.'
+            selectedPackage.description || "Paket event Kareem Entertainment."
           }}
         </p>
 
@@ -206,21 +194,21 @@ onMounted(loadData)
           <div>
             <span>Kategori</span>
             <strong>
-              {{ selectedPackage.category?.name || '-' }}
+              {{ selectedPackage.category?.name || "-" }}
             </strong>
           </div>
 
           <div>
             <span>Minimum Peserta</span>
             <strong>
-              {{ selectedPackage.min_participants ?? '-' }}
+              {{ selectedPackage.min_participants ?? "-" }}
             </strong>
           </div>
 
           <div>
             <span>Maksimum Peserta</span>
             <strong>
-              {{ selectedPackage.max_participants ?? '-' }}
+              {{ selectedPackage.max_participants ?? "-" }}
             </strong>
           </div>
 
@@ -263,12 +251,7 @@ onMounted(loadData)
 .catalog-intro {
   padding: 30px;
   background:
-    radial-gradient(
-      circle at 100% 50%,
-      #f9731620,
-      transparent 50%
-    ),
-    #18181b;
+    radial-gradient(circle at 100% 50%, #f9731620, transparent 50%), #18181b;
 }
 
 .catalog-intro h2 {
