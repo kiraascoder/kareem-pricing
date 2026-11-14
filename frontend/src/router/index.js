@@ -9,6 +9,7 @@ import CustomerPackagesView from "../views/CustomerPackagesView.vue";
 import CustomerBookingCreateView from "../views/CustomerBookingCreateView.vue";
 import CustomerBookingsView from "../views/CustomerBookingsView.vue";
 import CustomerBookingDetailView from "../views/CustomerBookingDetailView.vue";
+import AdminSectionView from "../views/AdminSectionView.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -27,48 +28,84 @@ const routes = [
       roles: ["admin", "super_admin"],
     },
   },
-  
-{
-  path: '/customer/packages',
-  component: CustomerPackagesView,
-  meta: {
-    requiresAuth: true,
-    roles: ['customer'],
-  },
-},
 
-{
-  path: '/customer/bookings',
-  component: CustomerBookingsView,
-  meta: {
-    requiresAuth: true,
-    roles: ['customer'],
+  {
+    path: "/admin/bookings",
+    component: AdminSectionView,
+    props: {
+      title: "Manajemen Booking",
+      description: "Kelola permintaan booking dan penawaran harga.",
+    },
+    meta: {
+      requiresAuth: true,
+      roles: ["admin", "super_admin"],
+    },
   },
-},
-{
-  path: '/customer/bookings/create',
-  component: CustomerBookingCreateView,
-  meta: {
-    requiresAuth: true,
-    roles: ['customer'],
+  {
+    path: "/admin/payments",
+    component: AdminSectionView,
+    props: {
+      title: "Verifikasi Pembayaran",
+      description: "Periksa bukti transfer dari customer.",
+    },
+    meta: {
+      requiresAuth: true,
+      roles: ["admin", "super_admin"],
+    },
   },
-},
-{
-  path: '/customer/bookings/:id',
-  component: CustomerBookingDetailView,
-  meta: {
-    requiresAuth: true,
-    roles: ['customer'],
+  {
+    path: "/admin/packages",
+    component: AdminSectionView,
+    props: {
+      title: "Manajemen Paket Event",
+      description: "Kelola paket dan kategori event.",
+    },
+    meta: {
+      requiresAuth: true,
+      roles: ["admin", "super_admin"],
+    },
   },
-},
 
-{
-  path: '/customer/payments',
-  component: CustomerSectionView,
-  props: { title: 'Pembayaran' },
-  meta: { requiresAuth: true, roles: ['customer'] },
-},
+  {
+    path: "/customer/packages",
+    component: CustomerPackagesView,
+    meta: {
+      requiresAuth: true,
+      roles: ["customer"],
+    },
+  },
 
+  {
+    path: "/customer/bookings",
+    component: CustomerBookingsView,
+    meta: {
+      requiresAuth: true,
+      roles: ["customer"],
+    },
+  },
+  {
+    path: "/customer/bookings/create",
+    component: CustomerBookingCreateView,
+    meta: {
+      requiresAuth: true,
+      roles: ["customer"],
+    },
+  },
+  {
+    path: "/customer/bookings/:id",
+    component: CustomerBookingDetailView,
+    meta: {
+      requiresAuth: true,
+      roles: ["customer"],
+    },
+  },
+
+  {
+    path: "/customer/payments",
+    component: CustomerSectionView,
+    props: { title: "Pembayaran" },
+    meta: { requiresAuth: true, roles: ["customer"] },
+  },
 ];
 
 const router = createRouter({

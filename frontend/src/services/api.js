@@ -1,50 +1,27 @@
+import axios from "axios";
 
-import api from './api'
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api/v1",
 
-export const bookingEndpoints = {
-  packages: '/event-packages',
-  bookings: '/bookings',
+  headers: {
+    Accept: "application/json",
+  },
 
-  // Cocokkan dengan route estimasi Laravel yang sudah ada.
-  // Contoh: '/price-estimate' atau '/price-recommendations/estimate'
-  estimate: null,
-}
+  timeout: 30000,
+});
 
-export function getPackages() {
-  return api.get(bookingEndpoints.packages)
-}
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("kareem_token");
 
-export function getBookings() {
-  return api.get(bookingEndpoints.bookings)
-}
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-export function createBooking(payload) {
-  return api.post(bookingEndpoints.bookings, payload)
-}
+    return config;
+  },
 
-export function getBooking(id) {
-  return api.get(`${bookingEndpoints.bookings}/${id}`)
-}
+  (error) => Promise.reject(error),
+);
 
-export function estimatePrice(payload) {
-  if (!bookingEndpoints.estimate) {
-    throw new Error(
-      'Endpoint estimasi AI belum dikonfigurasi di bookingApi.js.'
-    )
-  }
-
-  return api.post(bookingEndpoints.estimate, payload)
-}
-
-export function extractData(response) {
-  return response.data?.data ?? response.data
-}
-
-export function extractCollection(response) {
-  const data = extractData(response)
-
-  if (Array.isArray(data)) return data
-  if (Array.isArray(data?.data)) return data.data
-
-  throw new Error('Format daftar API tidak dikenali.')
-}
+export default api;
