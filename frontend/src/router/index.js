@@ -15,6 +15,8 @@ import CustomerBookingDetailView from "../views/CustomerBookingDetailView.vue";
 // Admin
 import AdminView from "../views/AdminView.vue";
 import AdminSectionView from "../views/AdminSectionView.vue";
+import AdminBookingsView from "../views/AdminBookingsView.vue";
+import AdminBookingDetailView from "../views/AdminBookingDetailView.vue";
 
 // Public Website
 import PublicLayout from "../layouts/PublicLayout.vue";
@@ -135,11 +137,13 @@ const routes = [
   {
     path: "/admin/bookings",
     name: "admin-bookings",
-    component: AdminSectionView,
-    props: {
-      title: "Manajemen Booking",
-      description: "Kelola permintaan booking dan penawaran harga.",
-    },
+    component: AdminBookingsView,
+    meta: adminMeta,
+  },
+  {
+    path: "/admin/bookings/:id",
+    name: "admin-booking-detail",
+    component: AdminBookingDetailView,
     meta: adminMeta,
   },
   {

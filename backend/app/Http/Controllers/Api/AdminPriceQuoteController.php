@@ -61,7 +61,8 @@ class AdminPriceQuoteController extends Controller
 
             $recommendation = $lockedBooking
                 ->priceRecommendations()
-                ->latest()
+                ->where('status', 'generated')
+                ->latest('id')
                 ->first();
 
             if (!$recommendation) {

@@ -24,6 +24,7 @@ class AdminBookingController extends Controller
             ->with([
                 'user:id,name,email,phone',
                 'eventPackage.category',
+                'priceQuote',
             ])
             ->when(
                 $filters['status'] ?? null,
@@ -34,10 +35,20 @@ class AdminBookingController extends Controller
                 $filters['search'] ?? null,
                 function ($query, $search) {
                     $query->where(function ($q) use ($search) {
-                        $q->where('booking_code', 'like', "%{$search}%")
-                            ->orWhereHas('user', function ($user) use ($search) {
-                                $user->where('name', 'like', "%{$search}%");
-                            });
+                        $q->where(
+                            'booking_code',
+                            'like',
+                            "%{$search}%"
+                        )->orWhereHas(
+                            'user',
+                            function ($user) use ($search) {
+                                $user->where(
+                                    'name',
+                                    'like',
+                                    "%{$search}%"
+                                );
+                            }
+                        );
                     });
                 }
             )
@@ -57,12 +68,15 @@ class AdminBookingController extends Controller
             'data' => $booking->load([
                 'user:id,name,email,phone',
                 'eventPackage.category',
+                'priceQuote',
             ]),
         ]);
     }
 
-    public function review(Request $request, Booking $booking): JsonResponse
-    {
+    public function review(
+        Request $request,
+        Booking $booking
+    ): JsonResponse {
         $data = $request->validate([
             'status' => [
                 'required',

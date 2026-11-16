@@ -23,7 +23,9 @@ const error = ref("");
 const form = ref({
   event_package_id: "",
   event_date: "",
-  participants_count: 100,
+  participants: 100,
+  customer_notes: "",
+  event_location: "",
 });
 
 const selectedPackage = computed(() =>
@@ -60,7 +62,9 @@ function buildPayload() {
   return {
     event_package_id: Number(form.value.event_package_id),
     event_date: form.value.event_date,
-    participants_count: Number(form.value.participants_count),
+    participants: Number(form.value.participants),
+    customer_notes: form.value.customer_notes.trim() || null,
+    event_location: form.value.event_location.trim() || null,
   };
 }
 
@@ -77,7 +81,7 @@ function validateForm() {
     return false;
   }
 
-  const count = Number(form.value.participants_count);
+  const count = Number(form.value.participants);
 
   const min = selectedPackage.value.min_participants;
   const max = selectedPackage.value.max_participants;
@@ -232,13 +236,13 @@ onMounted(loadPackages);
               required
             />
           </div>
-
+          
           <div class="field">
-            <label for="participants"> Jumlah Peserta </label>
+            <label for="participants">Jumlah Peserta</label>
 
             <input
               id="participants"
-              v-model.number="form.participants_count"
+              v-model.number="form.participants"
               class="roman-input"
               type="number"
               min="1"
@@ -246,6 +250,52 @@ onMounted(loadPackages);
               :disabled="submitting"
               required
             />
+          </div>
+
+          <div class="field">
+            <label for="customer_notes"> Catatan Tambahan </label>
+
+            <textarea
+              id="customer_notes"
+              v-model="form.customer_notes"
+              class="roman-input notes-input"
+              placeholder="Tuliskan kebutuhan khusus event Anda, seperti konsep acara, dekorasi, lokasi, atau permintaan tambahan..."
+              rows="5"
+              maxlength="2000"
+              :disabled="submitting"
+            ></textarea>
+
+            <div class="notes-footer">
+              <span>
+                Informasi tambahan untuk membantu admin memahami kebutuhan event
+                Anda.
+              </span>
+
+              <span> {{ form.customer_notes.length }}/2000 </span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="event_location"> Lokasi Event </label>
+
+            <textarea
+              id="event_location"
+              v-model="form.event_location"
+              class="roman-input notes-input"
+              placeholder="Silahkan memasukan alamat lengkap alamat lokasi event anda..."
+              rows="5"
+              maxlength="2000"
+              :disabled="submitting"
+            ></textarea>
+
+            <div class="notes-footer">
+              <span>
+                Informasi tambahan untuk membantu admin memahami kebutuhan event
+                Anda.
+              </span>
+
+              <span> {{ form.event_location.length }}/2000 </span>
+            </div>
           </div>
 
           <div v-if="error" class="form-error" role="alert">
@@ -487,5 +537,40 @@ onMounted(loadPackages);
   .estimate-info-card {
     padding: 20px;
   }
+}
+.notes-input {
+  display: block;
+  width: 100%;
+  min-height: 125px;
+  padding: 14px 16px;
+  resize: vertical;
+  line-height: 1.7;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.notes-input:focus {
+  outline: none;
+  border-color: #f97316;
+}
+
+.optional {
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.notes-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 8px;
+  color: #71717a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.notes-footer span:last-child {
+  flex-shrink: 0;
 }
 </style>
