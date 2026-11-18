@@ -1,0 +1,61 @@
+﻿id_pemesanan,jenis_acara,tanggal_pelaksanaan,tahun,bulan,hari_dalam_minggu,kategori_hari,harga_estimasi
+1,Workshop,2025-10-22,2025,10,Wednesday,Weekday,7600000
+2,Workshop,2024-07-21,2024,7,Sunday,Weekend,8500000
+3,Workshop,2024-02-27,2024,2,Tuesday,Weekday,7500000
+4,Workshop,2025-04-07,2025,4,Monday,Weekday,6900000
+5,Seminar,2024-11-29,2024,11,Friday,Weekday,8200000
+6,Family Gathering,2025-05-21,2025,5,Wednesday,Weekday,10900000
+7,Seminar,2025-10-20,2025,10,Monday,Weekday,8700000
+8,Family Gathering,2025-02-15,2025,2,Saturday,Weekend,10900000
+9,Workshop,2024-05-11,2024,5,Saturday,Weekend,8000000
+10,Workshop,2025-12-25,2025,12,Thursday,Weekday,8700000
+11,Event Bisnis,2025-06-18,2025,6,Wednesday,Weekday,13000000
+12,Employee Gathering,2025-04-02,2025,4,Wednesday,Weekday,11100000
+13,Workshop,2024-10-04,2024,10,Friday,Weekday,6900000
+14,Family Gathering,2025-10-03,2025,10,Friday,Weekday,11100000
+15,Event Bisnis,2024-02-09,2024,2,Friday,Weekday,12500000
+16,Employee Gathering,2024-01-12,2024,1,Friday,Weekday,10600000
+17,Family Gathering,2024-07-25,2024,7,Thursday,Weekday,10800000
+18,Employee Gathering,2024-05-10,2024,5,Friday,Weekday,10700000
+19,Family Gathering,2025-03-22,2025,3,Saturday,Weekend,10700000
+20,Employee Gathering,2025-10-27,2025,10,Monday,Weekday,10900000
+21,Family Gathering,2024-11-01,2024,11,Friday,Weekday,10300000
+22,Employee Gathering,2025-04-16,2025,4,Wednesday,Weekday,11600000
+23,Family Gathering,2024-12-23,2024,12,Monday,Weekday,11900000
+24,Event Bisnis,2025-09-19,2025,9,Friday,Weekday,12200000
+25,Workshop,2025-02-04,2025,2,Tuesday,Weekday,7700000
+26,Seminar,2024-12-20,2024,12,Friday,Weekday,9200000
+27,Workshop,2024-06-10,2024,6,Monday,Weekday,8000000
+28,Seminar,2024-12-23,2024,12,Monday,Weekday,9200000
+29,Event Bisnis,2024-07-21,2024,7,Sunday,Weekend,14100000
+30,Employee Gathering,2024-01-16,2024,1,Tuesday,Weekday,10500000
+31,Seminar,2025-02-03,2025,2,Monday,Weekday,8800000
+32,Employee Gathering,2024-04-17,2024,4,Wednesday,Weekday,10800000
+33,Family Gathering,2024-09-14,2024,9,Saturday,Weekend,11300000
+34,Workshop,2025-12-29,2025,12,Monday,Weekday,8100000
+35,Family Gathering,2025-07-27,2025,7,Sunday,Weekend,11400000
+36,Seminar,2025-04-22,2025,4,Tuesday,Weekday,8100000
+37,Workshop,2024-02-25,2024,2,Sunday,Weekend,7400000
+38,Family Gathering,2024-12-21,2024,12,Saturday,Weekend,12300000
+39,Workshop,2025-04-22,2025,4,Tuesday,Weekday,8000000
+40,Seminar,2024-05-19,2024,5,Sunday,Weekend,8400000
+41,Workshop,2024-04-13,2024,4,Saturday,Weekend,7700000
+42,Seminar,2024-06-09,2024,6,Sunday,Weekend,10200000
+43,Event Bisnis,2024-03-04,2024,3,Monday,Weekday,13100000
+44,Event Bisnis,2025-05-23,2025,5,Friday,Weekday,12500000
+45,Event Bisnis,2025-01-10,2025,1,Friday,Weekday,12200000
+46,Seminar,2025-11-28,2025,11,Friday,Weekday,8900000
+47,Event Bisnis,2024-07-29,2024,7,Monday,Weekday,13300000
+48,Workshop,2024-02-07,2024,2,Wednesday,Weekday,7700000
+49,Employee Gathering,2025-03-13,2025,3,Thursday,Weekday,11100000
+50,Family Gathering,2025-10-28,2025,10,Tuesday,Weekday,10200000
+51,Workshop,2025-09-10,2025,9,Wednesday,Weekday,7100000
+52,Event Bisnis,2024-08-18,2024,8,Sunday,Weekend,13900000
+53,Workshop,2025-09-26,2025,9,Friday,Weekday,8100000
+54,Family Gathering,2024-03-25,2024,3,Monday,Weekday,10700000
+55,Family Gathering,2024-01-21,2024,1,Sunday,Weekend,10400000
+56,Workshop,2024-03-02,2024,3,Saturday,Weekend,8400000
+57,Employee Gathering,2025-06-02,2025,6,Monday,Weekday,12200000
+58,Seminar,2025-06-05,2025,6,Thursday,Weekday,9700000
+59,Workshop,2025-02-06,2025,2,Thursday,Weekday,7800000
+60,Workshop,2025-01-15,2025,1,Wednesday,Weekday,7300000

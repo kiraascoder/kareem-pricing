@@ -17,17 +17,27 @@ import {
   extractApiError,
 } from "../services/bookingApi";
 
+import { adminBookingAiApi } from "../services/adminBookingAiApi";
+import AiRecommendationCard from "../components/admin/AiRecommendationCard.vue";
+
 const route = useRoute();
+
+// ===========================
+// STATE
+// ===========================
 
 const booking = ref(null);
 const estimate = ref(null);
+const aiPrediction = ref(null);
 
 const loading = ref(true);
 const processing = ref(false);
 const sendingQuote = ref(false);
+const aiLoading = ref(false);
 
 const error = ref("");
 const estimateError = ref("");
+const aiError = ref("");
 const actionError = ref("");
 const successMessage = ref("");
 
@@ -36,16 +46,21 @@ const form = ref({
   admin_notes: "",
 });
 
-// Booking status
-const isPending = computed(() => {
-  return booking.value?.status === "pending";
-});
+// Mencegah respons lama menimpa booking baru
+let loadVersion = 0;
 
-const isReviewed = computed(() => {
-  return booking.value?.status === "reviewed";
-});
+// ===========================
+// COMPUTED
+// ===========================
 
-// Price recommendation
+const isPending = computed(() => booking.value?.status === "pending");
+
+const isReviewed = computed(() => booking.value?.status === "reviewed");
+
+const eventPackage = computed(
+  () => booking.value?.event_package ?? booking.value?.eventPackage ?? null,
+);
+
 const estimateData = computed(() => {
   const data = estimate.value;
 
@@ -59,37 +74,56 @@ const estimateData = computed(() => {
 });
 
 const recommendedPrice = computed(() => {
-  return estimateData.value?.estimated_price ?? null;
+  const aiPrice = aiPrediction.value?.recommended_price;
+
+  if (aiPrice !== null && aiPrice !== undefined) {
+    return Number(aiPrice);
+  }
+
+  const fallback =
+    estimateData.value?.estimated_price ??
+    estimateData.value?.recommended_price;
+
+  return fallback !== null && fallback !== undefined ? Number(fallback) : null;
 });
 
 const basePrice = computed(() => {
-  return estimateData.value?.base_price ?? null;
-});
-
-const calculatedAt = computed(() => {
-  return estimateData.value?.calculated_at ?? null;
-});
-
-// Price quotation
-const priceQuote = computed(() => {
-  return booking.value?.price_quote ?? null;
-});
-
-const hasPriceQuote = computed(() => {
-  return Boolean(priceQuote.value);
-});
-
-const canCreateQuote = computed(() => {
   return (
-    isReviewed.value && !hasPriceQuote.value && recommendedPrice.value !== null
+    aiPrediction.value?.base_price ??
+    estimateData.value?.base_price ??
+    booking.value?.base_price_snapshot ??
+    null
   );
 });
 
-const eventPackage = computed(() => {
-  return booking.value?.event_package ?? booking.value?.eventPackage ?? null;
+const calculatedAt = computed(() => {
+  return (
+    aiPrediction.value?.calculated_at ??
+    estimateData.value?.calculated_at ??
+    null
+  );
 });
 
-// Format currency
+const priceQuote = computed(
+  () => booking.value?.price_quote ?? booking.value?.priceQuote ?? null,
+);
+
+const hasPriceQuote = computed(() => Boolean(priceQuote.value));
+
+const canCreateQuote = computed(() => {
+  return (
+    isReviewed.value &&
+    !hasPriceQuote.value &&
+    recommendedPrice.value !== null &&
+    Number.isFinite(recommendedPrice.value) &&
+    recommendedPrice.value > 0
+  );
+});
+
+// ===========================
+// FORMATTERS
+// ===========================
+
 function formatRupiah(value) {
   if (value === null || value === undefined || value === "") {
     return "-";
@@ -97,18 +131,15 @@ function formatRupiah(value) {
 
   const number = Number(value);
 
-  if (!Number.isFinite(number)) {
-    return "-";
-  }
+  if (!Number.isFinite(number)) return "-";
 
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(number);
 }
 
-// Format date without timezone shifting
 function formatDate(value) {
   if (!value) return "-";
 
@@ -145,9 +176,7 @@ function formatDateTime(value) {
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) {
-    return "-";
-  }
+  if (Number.isNaN(date.getTime())) return "-";
 
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
@@ -199,9 +228,14 @@ function getErrorMessage(err, fallback) {
 function resetMessages() {
   error.value = "";
   estimateError.value = "";
+  aiError.value = "";
   actionError.value = "";
   successMessage.value = "";
 }
+
+// ===========================
+// API REQUESTS
+// ===========================
 
 async function fetchBooking(id) {
   const response = await getAdminBooking(id);
@@ -215,45 +249,100 @@ async function fetchBooking(id) {
   return result;
 }
 
-async function fetchEstimate(id) {
+async function fetchEstimate(id, version = loadVersion) {
   try {
     const response = await getPriceEstimate(id);
-    estimate.value = extractData(response);
+    const data = extractData(response);
+
+    if (version !== loadVersion) return;
+
+    estimate.value = data;
     estimateError.value = "";
   } catch (err) {
+    if (version !== loadVersion) return;
+
     estimate.value = null;
 
-    if (err.response?.status === 404) {
-      estimateError.value = "";
-    } else {
-      estimateError.value = getErrorMessage(
-        err,
-        "Gagal memuat rekomendasi harga AI.",
-      );
+    estimateError.value =
+      err.response?.status === 404
+        ? ""
+        : getErrorMessage(err, "Gagal memuat rekomendasi harga AI.");
+  }
+}
+
+async function loadAiRecommendation(id, version = loadVersion) {
+  aiLoading.value = true;
+
+  try {
+    const response = await adminBookingAiApi.getRecommendation(id);
+
+    if (version !== loadVersion) return;
+
+    aiPrediction.value =
+      response?.data?.prediction ?? response?.data?.data?.prediction ?? null;
+
+    aiError.value = aiPrediction.value
+      ? ""
+      : "Rincian rekomendasi AI belum tersedia.";
+  } catch (err) {
+    if (version !== loadVersion) return;
+
+    aiPrediction.value = null;
+
+    aiError.value =
+      err.response?.status === 404
+        ? "Rincian rekomendasi AI belum tersedia."
+        : getErrorMessage(err, "Gagal memuat rincian rekomendasi AI.");
+  } finally {
+    if (version === loadVersion) {
+      aiLoading.value = false;
     }
   }
 }
 
+// ===========================
+// LOAD BOOKING
+// ===========================
+
 async function loadBooking() {
   const id = route.params.id;
+  const version = ++loadVersion;
 
   loading.value = true;
+
   resetMessages();
 
   booking.value = null;
   estimate.value = null;
+  aiPrediction.value = null;
+  aiLoading.value = false;
 
   try {
-    booking.value = await fetchBooking(id);
-    await fetchEstimate(id);
+    const result = await fetchBooking(id);
+
+    if (version !== loadVersion) return;
+
+    booking.value = result;
+
+    await Promise.all([
+      fetchEstimate(id, version),
+      loadAiRecommendation(id, version),
+    ]);
   } catch (err) {
+    if (version !== loadVersion) return;
+
     error.value = getErrorMessage(err, "Gagal memuat detail booking.");
   } finally {
-    loading.value = false;
+    if (version === loadVersion) {
+      loading.value = false;
+    }
   }
 }
 
-// Review / cancel booking
+// ===========================
+// REVIEW / CANCEL BOOKING
+// ===========================
+
 async function submitReview(status) {
   if (!isPending.value || processing.value || sendingQuote.value) {
     return;
@@ -271,20 +360,24 @@ async function submitReview(status) {
   successMessage.value = "";
 
   const id = booking.value.id;
+  const version = loadVersion;
 
   try {
     const response = await reviewAdminBooking(id, {
       status,
     });
 
-    // Gunakan respons mutation terlebih dahulu,
-    // sehingga status tetap diperbarui jika
-    // refresh berikutnya mengalami gangguan.
+    if (version !== loadVersion) return;
+
     const updated = unwrapAdminBooking(response);
+    const updatedBooking = updated?.booking ?? updated;
 
     booking.value = {
       ...booking.value,
-      ...(updated?.booking ?? updated),
+      ...(updatedBooking && typeof updatedBooking === "object"
+        ? updatedBooking
+        : {}),
+      status: updatedBooking?.status ?? status,
     };
 
     successMessage.value =
@@ -293,13 +386,22 @@ async function submitReview(status) {
         : "Booking berhasil dibatalkan.";
 
     try {
-      booking.value = await fetchBooking(id);
-      await fetchEstimate(id);
+      const refreshed = await fetchBooking(id);
+
+      if (version !== loadVersion) return;
+
+      booking.value = refreshed;
+
+      await Promise.all([
+        fetchEstimate(id, version),
+        loadAiRecommendation(id, version),
+      ]);
     } catch {
-      // Mutation sudah berhasil.
-      // Admin tetap dapat menekan Perbarui Detail.
+      // Mutasi berhasil meskipun refresh gagal.
     }
   } catch (err) {
+    if (version !== loadVersion) return;
+
     actionError.value = getErrorMessage(
       err,
       "Gagal memperbarui status booking.",
@@ -309,7 +411,10 @@ async function submitReview(status) {
   }
 }
 
-// Send final quotation
+// ===========================
+// CREATE PRICE QUOTATION
+// ===========================
+
 async function submitPriceQuote() {
   if (sendingQuote.value || processing.value) return;
 
@@ -318,7 +423,7 @@ async function submitPriceQuote() {
 
   if (!canCreateQuote.value) {
     actionError.value =
-      "Booking harus berstatus reviewed, memiliki estimasi AI, dan belum mempunyai penawaran.";
+      "Booking harus sudah direview, memiliki estimasi AI, dan belum mempunyai penawaran.";
     return;
   }
 
@@ -350,6 +455,7 @@ async function submitPriceQuote() {
   sendingQuote.value = true;
 
   const id = booking.value.id;
+  const version = loadVersion;
 
   try {
     const response = await createAdminPriceQuote(id, {
@@ -357,14 +463,19 @@ async function submitPriceQuote() {
       admin_notes: notes || null,
     });
 
-    const createdQuote = unwrapAdminBooking(response);
+    if (version !== loadVersion) return;
 
-    // Segera tandai penawaran telah dibuat agar
-    // form tidak bisa digunakan untuk mengirim ulang.
+    const created = unwrapAdminBooking(response);
+
+    const createdQuote =
+      created?.price_quote ??
+      created?.quote ??
+      created?.booking?.price_quote ??
+      created;
+
     booking.value = {
       ...booking.value,
-      price_quote:
-        createdQuote?.price_quote ?? createdQuote?.quote ?? createdQuote,
+      price_quote: createdQuote,
     };
 
     form.value.final_price = "";
@@ -373,12 +484,17 @@ async function submitPriceQuote() {
     successMessage.value = "Penawaran harga berhasil dikirim kepada customer.";
 
     try {
-      booking.value = await fetchBooking(id);
+      const refreshed = await fetchBooking(id);
+
+      if (version !== loadVersion) return;
+
+      booking.value = refreshed;
     } catch {
-      // Penawaran berhasil dibuat.
-      // Jangan tampilkan pesan kegagalan mutation.
+      // Penawaran sudah berhasil dibuat.
     }
   } catch (err) {
+    if (version !== loadVersion) return;
+
     actionError.value = getErrorMessage(err, "Gagal mengirim penawaran harga.");
   } finally {
     sendingQuote.value = false;
@@ -390,6 +506,10 @@ function useRecommendedPrice() {
 
   form.value.final_price = String(recommendedPrice.value);
 }
+
+// ===========================
+// LIFECYCLE
+// ===========================
 
 onMounted(loadBooking);
 
@@ -409,19 +529,21 @@ watch(
 
     <h1 class="roman-title">Detail Booking Admin</h1>
 
-    <!-- Loading -->
+    <!-- LOADING -->
     <div v-if="loading" class="roman-card state-box">
       Memuat informasi booking...
     </div>
 
-    <!-- Error -->
+    <!-- ERROR -->
     <div v-else-if="error" class="roman-card state-box">
       <p class="error">{{ error }}</p>
 
-      <button class="refresh-button" @click="loadBooking">Coba Lagi</button>
+      <button type="button" class="refresh-button" @click="loadBooking">
+        Coba Lagi
+      </button>
     </div>
 
-    <!-- Main content -->
+    <!-- MAIN -->
     <div v-else-if="booking" class="detail-grid">
       <div class="main-column">
         <!-- BOOKING INFORMATION -->
@@ -432,7 +554,6 @@ watch(
 
           <div class="info-row">
             <span>Kode Booking</span>
-
             <strong>
               {{ booking.booking_code || booking.id }}
             </strong>
@@ -440,7 +561,6 @@ watch(
 
           <div class="info-row">
             <span>Status</span>
-
             <strong class="orange">
               {{ statusLabel(booking.status) }}
             </strong>
@@ -448,39 +568,26 @@ watch(
 
           <div class="info-row">
             <span>Customer</span>
-
-            <strong>
-              {{ booking.user?.name || "-" }}
-            </strong>
+            <strong>{{ booking.user?.name || "-" }}</strong>
           </div>
 
           <div class="info-row">
             <span>Email Customer</span>
-
-            <strong>
-              {{ booking.user?.email || "-" }}
-            </strong>
+            <strong>{{ booking.user?.email || "-" }}</strong>
           </div>
 
           <div class="info-row">
             <span>Telepon</span>
-
-            <strong>
-              {{ booking.user?.phone || "-" }}
-            </strong>
+            <strong>{{ booking.user?.phone || "-" }}</strong>
           </div>
 
           <div class="info-row">
             <span>Paket Event</span>
-
-            <strong>
-              {{ eventPackage?.name || "-" }}
-            </strong>
+            <strong>{{ eventPackage?.name || "-" }}</strong>
           </div>
 
           <div class="info-row">
             <span>Kategori Event</span>
-
             <strong>
               {{ eventPackage?.category?.name || "-" }}
             </strong>
@@ -488,7 +595,6 @@ watch(
 
           <div class="info-row">
             <span>Tanggal Event</span>
-
             <strong>
               {{ formatDate(booking.event_date) }}
             </strong>
@@ -496,7 +602,6 @@ watch(
 
           <div class="info-row">
             <span>Lokasi Event</span>
-
             <strong>
               {{ booking.event_location || "-" }}
             </strong>
@@ -504,15 +609,18 @@ watch(
 
           <div class="info-row">
             <span>Jumlah Peserta</span>
-
             <strong>
               {{ booking.participants ?? "-" }}
             </strong>
           </div>
 
+          <div class="info-row">
+            <span>Harga Dasar Paket</span>
+            <strong>{{ formatRupiah(basePrice) }}</strong>
+          </div>
+
           <div class="notes">
             <span>Catatan Customer</span>
-
             <p>
               {{ booking.customer_notes || "Tidak ada catatan tambahan." }}
             </p>
@@ -523,16 +631,48 @@ watch(
         <section class="roman-card section-card">
           <div class="roman-eyebrow">AI PRICE RECOMMENDATION</div>
 
-          <h2>Rekomendasi Harga AI</h2>
+          <h2>Analisis Rekomendasi Harga AI</h2>
 
-          <p v-if="estimateError" class="error">
-            {{ estimateError }}
+          <p class="muted">
+            Rekomendasi harga menggunakan Random Forest dan Fuzzy Sugeno sebagai
+            bahan pertimbangan admin dalam menentukan harga penawaran.
           </p>
 
+          <div v-if="aiLoading" class="state-inline">
+            Memuat rincian prediksi AI...
+          </div>
+
+          <template v-else-if="aiPrediction">
+            <AiRecommendationCard :prediction="aiPrediction" />
+
+            <div v-if="calculatedAt" class="info-row">
+              <span>Waktu Perhitungan</span>
+              <strong>
+                {{ formatDateTime(calculatedAt) }}
+              </strong>
+            </div>
+
+            <details class="ai-details">
+              <summary>Lihat Fitur Input dan Detail Perhitungan</summary>
+
+              <h3>Fitur Input Model</h3>
+
+              <pre>{{
+                JSON.stringify(aiPrediction.input_features ?? {}, null, 2)
+              }}</pre>
+
+              <h3>Detail Perhitungan</h3>
+
+              <pre>{{
+                JSON.stringify(aiPrediction.calculation_details ?? {}, null, 2)
+              }}</pre>
+            </details>
+          </template>
+
+          <!-- FALLBACK ESTIMATE -->
           <template v-else-if="recommendedPrice !== null">
             <div class="estimate-box">
               <span>Harga Rekomendasi AI</span>
-
               <strong>
                 {{ formatRupiah(recommendedPrice) }}
               </strong>
@@ -540,7 +680,6 @@ watch(
 
             <div class="info-row">
               <span>Harga Dasar</span>
-
               <strong>
                 {{ formatRupiah(basePrice) }}
               </strong>
@@ -548,20 +687,27 @@ watch(
 
             <div v-if="calculatedAt" class="info-row">
               <span>Waktu Perhitungan</span>
-
               <strong>
                 {{ formatDateTime(calculatedAt) }}
               </strong>
             </div>
 
             <p class="muted">
-              Rekomendasi AI digunakan sebagai bahan pertimbangan admin sebelum
-              menetapkan harga final.
+              Estimasi tersedia, tetapi rincian Random Forest dan Fuzzy Sugeno
+              belum dapat ditampilkan.
             </p>
           </template>
 
           <p v-else class="muted">
             Estimasi harga AI belum tersedia untuk booking ini.
+          </p>
+
+          <p v-if="aiError" class="warning-text">
+            {{ aiError }}
+          </p>
+
+          <p v-if="estimateError" class="error">
+            {{ estimateError }}
           </p>
         </section>
 
@@ -573,7 +719,6 @@ watch(
 
           <div class="info-row">
             <span>Harga Estimasi</span>
-
             <strong>
               {{ formatRupiah(priceQuote.estimated_price) }}
             </strong>
@@ -581,7 +726,6 @@ watch(
 
           <div class="info-row">
             <span>Harga Final</span>
-
             <strong class="orange">
               {{ formatRupiah(priceQuote.final_price) }}
             </strong>
@@ -589,7 +733,6 @@ watch(
 
           <div class="info-row">
             <span>Status Penawaran</span>
-
             <strong class="orange">
               {{ quoteStatusLabel(priceQuote.status) }}
             </strong>
@@ -597,7 +740,6 @@ watch(
 
           <div v-if="priceQuote.created_at" class="info-row">
             <span>Tanggal Penawaran</span>
-
             <strong>
               {{ formatDateTime(priceQuote.created_at) }}
             </strong>
@@ -605,7 +747,6 @@ watch(
 
           <div class="notes">
             <span>Catatan Admin</span>
-
             <p>
               {{ priceQuote.admin_notes || "Tidak ada catatan admin." }}
             </p>
@@ -674,8 +815,8 @@ watch(
             </div>
 
             <p v-if="!canCreateQuote" class="warning-text">
-              Penawaran hanya dapat dikirim setelah rekomendasi harga AI
-              tersedia.
+              Penawaran hanya dapat dikirim setelah booking direview,
+              rekomendasi harga tersedia, dan belum ada penawaran.
             </p>
 
             <button
@@ -692,6 +833,7 @@ watch(
           </form>
         </section>
 
+        <!-- ACTION MESSAGES -->
         <div v-if="successMessage" class="success-box" role="status">
           {{ successMessage }}
         </div>
@@ -714,6 +856,7 @@ watch(
 
         <template v-if="isPending">
           <button
+            type="button"
             class="primary-button"
             :disabled="processing || sendingQuote"
             @click="submitReview('reviewed')"
@@ -722,6 +865,7 @@ watch(
           </button>
 
           <button
+            type="button"
             class="danger-button"
             :disabled="processing || sendingQuote"
             @click="submitReview('cancelled')"
@@ -732,7 +876,6 @@ watch(
 
         <div v-else class="status-info">
           <span>Status Booking</span>
-
           <strong class="orange">
             {{ statusLabel(booking.status) }}
           </strong>
@@ -740,13 +883,13 @@ watch(
 
         <div v-if="hasPriceQuote" class="status-info">
           <span>Status Penawaran</span>
-
           <strong>
             {{ quoteStatusLabel(priceQuote.status) }}
           </strong>
         </div>
 
         <button
+          type="button"
           class="refresh-button"
           :disabled="loading || processing || sendingQuote"
           @click="loadBooking"
@@ -783,10 +926,12 @@ h1 {
 .main-column {
   display: grid;
   gap: 22px;
+  min-width: 0;
 }
 
 .section-card {
   padding: 28px;
+  min-width: 0;
 }
 
 .section-card h2 {
@@ -842,6 +987,7 @@ h1 {
   flex-direction: column;
   gap: 10px;
   padding: 22px;
+  margin: 20px 0;
   border: 1px solid #f9731633;
   border-radius: 8px;
   background: #f973160b;
@@ -855,6 +1001,46 @@ h1 {
 .estimate-box strong {
   color: #fb923c;
   font-size: clamp(22px, 3vw, 30px);
+  overflow-wrap: anywhere;
+}
+
+.ai-details {
+  margin-top: 22px;
+  padding: 16px;
+  border: 1px solid #303036;
+  border-radius: 10px;
+}
+
+.ai-details summary {
+  color: #fb923c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ai-details h3 {
+  margin: 20px 0 10px;
+  font-size: 13px;
+  color: #f5f5f4;
+}
+
+.ai-details pre {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 14px;
+  border-radius: 8px;
+  background: #111113;
+  color: #d4d4d8;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.state-inline {
+  padding: 20px 0;
+  color: #a1a1aa;
+  font-size: 13px;
 }
 
 .muted {
@@ -982,7 +1168,7 @@ button:disabled {
 }
 
 .warning-text {
-  margin-bottom: 20px;
+  margin: 20px 0;
   color: #fdba74;
   font-size: 12px;
   line-height: 1.7;
@@ -1026,6 +1212,10 @@ button:disabled {
 
   .use-estimate-button {
     width: 100%;
+  }
+
+  .info-row {
+    gap: 12px;
   }
 }
 </style>

@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\BookingHistoryController;
 use App\Http\Controllers\Api\CustomerPaymentController;
 use App\Http\Controllers\Api\AdminPaymentController;
 use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminBookingAiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -132,6 +133,10 @@ Route::prefix('v1')->group(function () {
                 ]);
             });
 
+            Route::get(
+                '/admin/bookings/{booking}/ai-recommendation',
+                [AdminBookingAiController::class, 'show']
+            );
 
             Route::get(
                 '/admin/dashboard',

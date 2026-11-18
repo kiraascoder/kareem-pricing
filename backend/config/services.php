@@ -35,9 +35,9 @@ return [
         ],
     ],
 
-    'ml_service' => [
-        'url' => env('ML_SERVICE_URL', 'http://127.0.0.1:8001'),
-        'timeout' => (int) env('ML_SERVICE_TIMEOUT', 10),
+    'kareem_ml' => [
+        'url' => env('ML_API_URL', 'http://127.0.0.1:8001'),
+        'api_key' => env('ML_API_KEY'),
     ],
 
 
