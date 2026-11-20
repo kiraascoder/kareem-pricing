@@ -18,6 +18,7 @@ const menus = [
   { label: "Dashboard", path: "/admin", icon: "◈" },
   { label: "Manajemen Booking", path: "/admin/bookings", icon: "▦" },
   { label: "Verifikasi Pembayaran", path: "/admin/payments", icon: "▣" },
+  { label: "Historical Event Price", path: "/admin/historical-event-prices", icon: "▤" },
   { label: "Paket Event", path: "/admin/packages", icon: "◇" },
 ];
 
@@ -53,7 +54,7 @@ async function logout() {
           :key="menu.path"
           :to="menu.path"
           class="menu-link"
-          active-class="active"
+          exact-active-class="active"
           @click="sidebarOpen = false"
         >
           <span class="menu-icon">{{ menu.icon }}</span>

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\CustomerPaymentController;
 use App\Http\Controllers\Api\AdminPaymentController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminBookingAiController;
+use App\Http\Controllers\Api\AdminHistoricalEventPriceController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -119,6 +120,11 @@ Route::prefix('v1')->group(function () {
 
         // Admin Routes
         Route::middleware('role:admin,super_admin')->group(function () {
+            Route::get('/admin/historical-event-prices/categories', [AdminHistoricalEventPriceController::class, 'categories']);
+            Route::apiResource('admin/historical-event-prices', AdminHistoricalEventPriceController::class)
+                ->only(['index', 'store', 'update', 'destroy'])
+                ->parameters(['historical-event-prices' => 'historicalEventPrice']);
+
 
 
             Route::post(

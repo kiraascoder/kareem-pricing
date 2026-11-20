@@ -167,6 +167,13 @@ const routes = [
     meta: adminMeta,
   },
 
+  {
+    path: "/admin/historical-event-prices",
+    name: "admin-historical-event-prices",
+    component: () => import("../views/AdminHistoricalEventPricesView.vue"),
+    meta: adminMeta,
+  },
+
   // =========================================
   // 404 NOT FOUND
   // =========================================
