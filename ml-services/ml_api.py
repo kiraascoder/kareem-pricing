@@ -1,4 +1,5 @@
 from pathlib import Path
+from dotenv import load_dotenv
 from datetime import date
 from typing import Literal
 import joblib
@@ -8,6 +9,12 @@ from pydantic import BaseModel, Field
 from features import make_features, FEATURES
 import os
 
+
+load_dotenv(
+    dotenv_path=Path(__file__).resolve().parent / ".env"
+)
+
+print("ML API key configured:", bool(os.getenv("ML_API_KEY")))
 ROOT = Path(__file__).resolve().parent
 MODEL_PATH = ROOT / 'random_forest.joblib'
 app = FastAPI(title='Kareem Pricing AI', version='1.0.0')

@@ -11,12 +11,15 @@ import CustomerPackagesView from "../views/CustomerPackagesView.vue";
 import CustomerBookingCreateView from "../views/CustomerBookingCreateView.vue";
 import CustomerBookingsView from "../views/CustomerBookingsView.vue";
 import CustomerBookingDetailView from "../views/CustomerBookingDetailView.vue";
+import CustomerPaymentsView from "../views/CustomerPaymentsView.vue";
 
 // Admin
 import AdminView from "../views/AdminView.vue";
 import AdminSectionView from "../views/AdminSectionView.vue";
 import AdminBookingsView from "../views/AdminBookingsView.vue";
 import AdminBookingDetailView from "../views/AdminBookingDetailView.vue";
+import AdminPaymentsView from "../views/AdminPaymentsView.vue";
+import AdminPackagesView from "../views/AdminPackagesView.vue";
 
 // Public Website
 import PublicLayout from "../layouts/PublicLayout.vue";
@@ -118,10 +121,7 @@ const routes = [
   {
     path: "/customer/payments",
     name: "customer-payments",
-    component: CustomerSectionView,
-    props: {
-      title: "Pembayaran",
-    },
+    component: CustomerPaymentsView,
     meta: customerMeta,
   },
 
@@ -149,21 +149,13 @@ const routes = [
   {
     path: "/admin/payments",
     name: "admin-payments",
-    component: AdminSectionView,
-    props: {
-      title: "Verifikasi Pembayaran",
-      description: "Periksa bukti transfer dari customer.",
-    },
+    component: AdminPaymentsView,
     meta: adminMeta,
   },
   {
     path: "/admin/packages",
     name: "admin-packages",
-    component: AdminSectionView,
-    props: {
-      title: "Manajemen Paket Event",
-      description: "Kelola paket dan kategori event.",
-    },
+    component: AdminPackagesView,
     meta: adminMeta,
   },
 

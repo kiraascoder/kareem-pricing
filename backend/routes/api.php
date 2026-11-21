@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\AdminPaymentController;
 use App\Http\Controllers\Api\AdminDashboardController;
 use App\Http\Controllers\Api\AdminBookingAiController;
 use App\Http\Controllers\Api\AdminHistoricalEventPriceController;
+use App\Http\Controllers\Api\AdminEventPackageController;
+use App\Http\Controllers\Api\AdminEventCategoryController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -125,7 +127,19 @@ Route::prefix('v1')->group(function () {
                 ->only(['index', 'store', 'update', 'destroy'])
                 ->parameters(['historical-event-prices' => 'historicalEventPrice']);
 
+            Route::apiResource(
+                'admin/event-packages',
+                AdminEventPackageController::class
+            )->parameters([
+                'event-packages' => 'package',
+            ]);
 
+            Route::apiResource(
+                'admin/event-categories',
+                AdminEventCategoryController::class
+            )->parameters([
+                'event-categories' => 'category',
+            ]);
 
             Route::post(
                 '/admin/bookings/{booking}/price-quote',
